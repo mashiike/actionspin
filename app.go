@@ -70,6 +70,7 @@ func (e SkipableError) Unwrap() error {
 }
 
 func Skipable(err error) error {
+
 	return SkipableError{Err: err}
 }
 
@@ -168,10 +169,19 @@ func (app *App) replaceUses(ctx context.Context, path string, bs []byte, owner, 
 	} else {
 		app.replacedFiles[path] = make(map[string]struct{})
 	}
-	replaceStr := fmt.Sprintf("%s/%s@%s # %s", owner, repo, commitHash, ref)
+	replaceStr := fmt.Sprintf("%s/%s@%s", owner, repo, commitHash)
 	slog.DebugContext(ctx, "replace uses for debug", "path", path, "before", uses, "after", replaceStr)
 	slog.InfoContext(ctx, "replace uses", "path", path, "owner", owner, "repo", repo, "ref", ref, "commitHash", commitHash)
-	bs = bytes.ReplaceAll(bs, []byte(uses), []byte(replaceStr))
+	lines := bytes.Split(bs, []byte("\n"))
+	after := make([][]byte, 0, len(lines))
+	for _, line := range lines {
+		afterLine := bytes.ReplaceAll(line, []byte(uses), []byte(replaceStr))
+		if !bytes.Equal(line, afterLine) {
+			afterLine = append(afterLine, []byte(" # "+ref)...)
+		}
+		after = append(after, afterLine)
+	}
+	bs = bytes.Join(after, []byte("\n"))
 	app.replacedFiles[path][uses] = struct{}{}
 	app.replacedUses[uses] = commitHash
 	return bs, nil
