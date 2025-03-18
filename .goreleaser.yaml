@@ -1,0 +1,41 @@
+version: 1
+
+before:
+  hooks:
+    - go mod download
+
+builds:
+  - env:
+      - CGO_ENABLED=0
+    main: ./cmd/actionspin/main.go
+    binary: actionspin
+    ldflags:
+      - -s -w
+      - -X main.Version={{.Version}}
+    goos:
+      - linux
+      - windows
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+
+release:
+  prerelease: false
+
+archives:
+  - files:
+    - LICENSE
+    - README.md
+    - CHANGELOG.md
+    - CREDITS
+
+snapshot:
+  name_template: "{{ .Env.NIGHTLY_VERSION }}"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"

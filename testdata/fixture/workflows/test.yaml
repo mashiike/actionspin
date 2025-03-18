@@ -1,0 +1,33 @@
+name: Test
+on:
+  push:
+    branches:
+      - master
+      - main
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+
+jobs:
+  test:
+    strategy:
+      matrix:
+        go:
+          - "1.24"
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up Go
+        uses: actions/setup-go@mockedCommitHash # v5
+        with:
+          go-version: ${{ matrix.go }}
+        id: go
+
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@mockedCommitHash # v4
+
+      - name: Build & Test
+        run: |
+          go test -race ./... -timeout 30s

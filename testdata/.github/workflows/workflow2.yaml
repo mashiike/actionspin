@@ -1,0 +1,8 @@
+name: Workflow 2
+on: pull_request
+jobs:
+  job2:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Node
+        uses: actions/setup-node@v1
