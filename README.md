@@ -126,13 +126,6 @@ jobs:
           go test -race ./... -timeout 30s
 ```
 
-### Command Line Options
-
-- `--target`: Directory or file to replace (default: `.github`)
-- `--output`: Output directory (default: `.github`)
-- `--log-format`: Log format (`json` or `text`, default: `json`)
-- `--log-level`: Log level (`debug`, `info`, `warn`, `error`, default: `info`)
-
 ## Contributing
 
 Please use GitHub's issue tracker for bug reports and feature requests. Pull requests are also welcome.
