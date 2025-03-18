@@ -25,7 +25,7 @@ type App struct {
 
 type AppOptions struct {
 	Target             string                                                             `help:"Replace Target dir or file" required:"" type:"existingpath" default:".github"`
-	Output             string                                                             `help:"Output dir" type:"path" default:""`
+	Output             string                                                             `help:"Output dir" type:"path" default:"-"`
 	GithubToken        string                                                             `help:"GitHub token" env:"GITHUB_TOKEN"`
 	CommitHashResolver func(ctx context.Context, owner, repo, ref string) (string, error) `kong:"-"`
 }
@@ -34,8 +34,10 @@ func New(opts AppOptions) *App {
 	if opts.CommitHashResolver == nil {
 		opts.CommitHashResolver = DefaultCommitHashResolver(opts.GithubToken)
 	}
-	if opts.Output == "" {
+	slog.Debug("AppOptions", "target", opts.Target, "output", opts.Output)
+	if opts.Output == "" || opts.Output == "-" {
 		opts.Output = opts.Target
+		slog.Debug("Output is not set, use Target as Output", "output", opts.Output)
 	}
 	return &App{
 		opts:          opts,

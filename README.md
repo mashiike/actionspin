@@ -11,10 +11,16 @@ Bulk replace GitHub Actions references from version tags to commit hashes for lo
 You can install it using the following command:
 
 ```sh
-go install github.com/mashiike/actionspin@latest
+$go install github.com/mashiike/actionspin/cmd/actionspin@latest 
 ```
 
 Alternatively, you can download the binary from [GitHub Releases](https://github.com/mashiike/actionspin/releases).
+
+or, Homebrew:
+
+```sh
+$ brew install mashiike/tap/actionspin
+```
 
 ## Usage
 
