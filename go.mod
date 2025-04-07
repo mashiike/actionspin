@@ -3,7 +3,7 @@ module github.com/mashiike/actionspin
 go 1.24.0
 
 require (
-	github.com/alecthomas/kong v1.9.0
+	github.com/alecthomas/kong v1.10.0
 	github.com/fatih/color v1.18.0
 	github.com/google/go-github/v70 v70.0.0
 	github.com/mashiike/slogutils v0.4.0
