@@ -24,18 +24,30 @@ type App struct {
 }
 
 type AppOptions struct {
-	Target             string                                                             `help:"Replace Target dir or file" required:"" type:"existingpath" default:".github"`
-	Output             string                                                             `help:"Output dir" type:"path" default:""`
-	GithubToken        string                                                             `help:"GitHub token" env:"GITHUB_TOKEN"`
-	CommitHashResolver func(ctx context.Context, owner, repo, ref string) (string, error) `kong:"-"`
+	Target             string             `help:"Replace Target dir or file" required:"" type:"existingpath" default:".github"`
+	Output             string             `help:"Output dir" type:"path" default:"-"`
+	GithubToken        string             `help:"GitHub token" env:"GITHUB_TOKEN"`
+	GHEHost            string             `help:"GitHub Enterprise Server host" name:"ghe-host" env:"GHE_HOST"`
+	GHEToken           string             `help:"GitHub Enterprise Server token" name:"ghe-token" env:"GHE_TOKEN"`
+	CommitHashResolver CommitHashResolver `kong:"-"`
 }
 
 func New(opts AppOptions) *App {
 	if opts.CommitHashResolver == nil {
-		opts.CommitHashResolver = DefaultCommitHashResolver(opts.GithubToken)
+		if opts.GHEHost != "" {
+			resolvers := []CommitHashResolver{
+				GHECommitHashResolver(opts.GHEHost, opts.GHEToken),
+				DefaultCommitHashResolver(opts.GithubToken),
+			}
+			opts.CommitHashResolver = FallbackCommitHashResolver(resolvers)
+		} else {
+			opts.CommitHashResolver = DefaultCommitHashResolver(opts.GithubToken)
+		}
 	}
-	if opts.Output == "" {
+	slog.Debug("AppOptions", "target", opts.Target, "output", opts.Output)
+	if opts.Output == "" || opts.Output == "-" {
 		opts.Output = opts.Target
+		slog.Debug("Output is not set, use Target as Output", "output", opts.Output)
 	}
 	return &App{
 		opts:          opts,
@@ -68,6 +80,7 @@ func (e SkipableError) Unwrap() error {
 }
 
 func Skipable(err error) error {
+
 	return SkipableError{Err: err}
 }
 
@@ -166,10 +179,19 @@ func (app *App) replaceUses(ctx context.Context, path string, bs []byte, owner, 
 	} else {
 		app.replacedFiles[path] = make(map[string]struct{})
 	}
-	replaceStr := fmt.Sprintf("%s/%s@%s # %s", owner, repo, commitHash, ref)
+	replaceStr := fmt.Sprintf("%s/%s@%s", owner, repo, commitHash)
 	slog.DebugContext(ctx, "replace uses for debug", "path", path, "before", uses, "after", replaceStr)
 	slog.InfoContext(ctx, "replace uses", "path", path, "owner", owner, "repo", repo, "ref", ref, "commitHash", commitHash)
-	bs = bytes.ReplaceAll(bs, []byte(uses), []byte(replaceStr))
+	lines := bytes.Split(bs, []byte("\n"))
+	after := make([][]byte, 0, len(lines))
+	for _, line := range lines {
+		afterLine := bytes.ReplaceAll(line, []byte(uses), []byte(replaceStr))
+		if !bytes.Equal(line, afterLine) {
+			afterLine = append(afterLine, []byte(" # "+ref)...)
+		}
+		after = append(after, afterLine)
+	}
+	bs = bytes.Join(after, []byte("\n"))
 	app.replacedFiles[path][uses] = struct{}{}
 	app.replacedUses[uses] = commitHash
 	return bs, nil
@@ -223,13 +245,53 @@ type Step struct {
 	Uses string `yaml:"uses"`
 }
 
-func DefaultCommitHashResolver(token string) func(ctx context.Context, owner, repo, ref string) (string, error) {
+type CommitHashResolver func(ctx context.Context, owner, repo, ref string) (string, error)
+
+func DefaultCommitHashResolver(token string) CommitHashResolver {
 	var client *github.Client
 	if token != "" {
 		client = github.NewClient(oauth2.NewClient(context.Background(), oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token})))
 	} else {
 		client = github.NewClient(nil)
 	}
+	return newCommitHashResolver(client)
+}
+
+func GHECommitHashResolver(ghHost, token string) CommitHashResolver {
+	var client *github.Client
+	if token != "" {
+		client = github.NewClient(oauth2.NewClient(context.Background(), oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token})))
+	} else {
+		client = github.NewClient(nil)
+	}
+	var err error
+	baseURL := fmt.Sprintf("https://%s/api/v3/", ghHost)
+	uploadURL := fmt.Sprintf("https://%s/api/uploads/", ghHost)
+	client, err = client.WithEnterpriseURLs(baseURL, uploadURL)
+	if err != nil {
+		// If there is an error creating the client, return a function that always returns the error.
+		return func(ctx context.Context, owner, repo, ref string) (string, error) {
+			return "", fmt.Errorf("failed to create client for GitHub Enterprise Server: %w", err)
+		}
+	}
+	return newCommitHashResolver(client)
+}
+
+func FallbackCommitHashResolver(funcs []CommitHashResolver) CommitHashResolver {
+	return func(ctx context.Context, owner, repo, ref string) (string, error) {
+		for _, fn := range funcs {
+			commitHash, err := fn(ctx, owner, repo, ref)
+			if err == nil {
+				return commitHash, nil
+			} else {
+				slog.WarnContext(ctx, "failed to resolve commit hash, try next resolver", "owner", owner, "repo", repo, "ref", ref, "error", err)
+			}
+		}
+		return "", fmt.Errorf("all commit hash resolvers failed for %s/%s@%s", owner, repo, ref)
+	}
+}
+
+func newCommitHashResolver(client *github.Client) CommitHashResolver {
 	return func(ctx context.Context, owner, repo, ref string) (string, error) {
 		// First, try resolving as a branch reference.
 		branchRef, _, err := client.Git.GetRef(ctx, owner, repo, "refs/heads/"+ref)

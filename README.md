@@ -40,6 +40,8 @@ Flags:
       --target=".github"       Replace Target dir or file
       --output=""              Output dir
       --github-token=STRING    GitHub token ($GITHUB_TOKEN)
+      --ghe-host=STRING        GitHub Enterprise Server host ($GHE_HOST)
+      --ghe-token=STRING       GitHub Enterprise Server token ($GHE_TOKEN)
 ```
 
 For example, consider the following Actions workflow:
@@ -131,6 +133,25 @@ jobs:
         run: |
           go test -race ./... -timeout 30s
 ```
+
+### GitHub Enterprise Server Support
+
+`actionspin` now supports GitHub Enterprise Server (GHES). When working with both GitHub.com and GHES repositories, you can configure the tool to resolve action references from your enterprise instance:
+
+```sh
+# Using environment variables
+export GHE_HOST=github.example.com
+export GHE_TOKEN=ghp_enterprise_token
+actionspin
+
+# Or using command line flags
+actionspin --ghe-host=github.example.com --ghe-token=ghp_enterprise_token
+```
+
+When GHES configuration is provided, `actionspin` will:
+1. First attempt to resolve action references from your GitHub Enterprise Server instance
+2. Fall back to GitHub.com if the action is not found on GHES
+3. This allows seamless operation with mixed environments where some actions are hosted on GHES and others on GitHub.com
 
 ## Contributing
 

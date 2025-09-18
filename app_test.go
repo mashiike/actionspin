@@ -35,6 +35,7 @@ func TestApp_Run(t *testing.T) {
 		"workflows/test.yaml",
 		"workflows/workflow1.yaml",
 		"workflows/workflow2.yaml",
+		"workflows/workflow3.yaml",
 	}
 	replacedFiles := app.ReplacedFiles()
 	require.ElementsMatch(t, expectedFiles, replacedFiles)
