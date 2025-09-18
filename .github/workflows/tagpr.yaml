@@ -31,7 +31,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@44694675825211faa026b3c33043df3e48a5fa00 # v5
         with:
-            go-version: "1.25.1
+            go-version: "1.25.1"
       - uses: mashiike/action-gocredits@d2bc7fc94c93a27761800f03408ca00c3e9b3e85 # v0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
