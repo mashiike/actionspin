@@ -64,7 +64,7 @@ jobs:
     strategy:
       matrix:
         go:
-          - "1.24"
+          - "1.25.1
     name: Build
     runs-on: ubuntu-latest
     steps:
@@ -116,7 +116,7 @@ jobs:
     strategy:
       matrix:
         go:
-          - "1.24"
+          - "1.25.1"
     name: Build
     runs-on: ubuntu-latest
     steps:
