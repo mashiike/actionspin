@@ -1,6 +1,6 @@
 module github.com/mashiike/actionspin
 
-go 1.24.0
+go 1.25.1
 
 require (
 	github.com/alecthomas/kong v1.12.1
@@ -15,8 +15,8 @@ require (
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
-	github.com/mattn/go-colorable v0.1.13 // indirect
+	github.com/mattn/go-colorable v0.1.14 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	golang.org/x/sys v0.25.0 // indirect
+	golang.org/x/sys v0.36.0 // indirect
 )
