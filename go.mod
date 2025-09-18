@@ -8,7 +8,7 @@ require (
 	github.com/google/go-github/v70 v70.0.0
 	github.com/mashiike/slogutils v0.4.0
 	github.com/stretchr/testify v1.11.1
-	golang.org/x/oauth2 v0.28.0
+	golang.org/x/oauth2 v0.31.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 
