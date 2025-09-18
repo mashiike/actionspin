@@ -3,6 +3,11 @@
 ## [v0.1.3](https://github.com/mashiike/actionspin/compare/v0.1.2...v0.1.3) - 2025-09-18
 - Bump Songmu/tagpr from 1.5.1 to 1.6.1 by @dependabot[bot] in https://github.com/mashiike/actionspin/pull/13
 - Add GitHub Enterprise Server support by @fujiwara in https://github.com/mashiike/actionspin/pull/27
+- Bump github.com/stretchr/testify from 1.10.0 to 1.11.1 by @dependabot[bot] in https://github.com/mashiike/actionspin/pull/25
+
+## [v0.1.3](https://github.com/mashiike/actionspin/compare/v0.1.2...v0.1.3) - 2025-09-18
+- Bump Songmu/tagpr from 1.5.1 to 1.6.1 by @dependabot[bot] in https://github.com/mashiike/actionspin/pull/13
+- Add GitHub Enterprise Server support by @fujiwara in https://github.com/mashiike/actionspin/pull/27
 
 ## [v0.1.3](https://github.com/mashiike/actionspin/compare/v0.1.2...v0.1.3) - 2025-05-20
 - Bump Songmu/tagpr from 1.5.1 to 1.6.1 by @dependabot in https://github.com/mashiike/actionspin/pull/13
