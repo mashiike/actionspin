@@ -26,7 +26,7 @@ jobs:
         with:
           ref: ${{ inputs.tag || github.ref }}
       - id: tagpr
-        uses: Songmu/tagpr@812f0c28980cb9a1e5cf427b65c1ac6a1d2b4377 # v1
+        uses: Songmu/tagpr@7191605433b03e11b313dbbc0efb80185170de4b # v1
         if: ${{ github.event_name != 'workflow_dispatch' }} # skip on workflow_dispatch
       - name: Set up Go
         uses: actions/setup-go@44694675825211faa026b3c33043df3e48a5fa00 # v5
