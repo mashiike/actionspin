@@ -1,0 +1,28 @@
+name: Caching Primes
+
+on: push
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@mockedCommitHash # v4
+
+    - name: Restore cached Primes
+      id: cache-primes-restore
+      uses: actions/cache/restore@mockedCommitHash # v4
+      with:
+        path: |
+          path/to/dependencies
+          some/other/dependencies
+        key: ${{ runner.os }}-primes
+
+    - name: Save Primes
+      id: cache-primes-save
+      uses: actions/cache/save@mockedCommitHash # v4
+      with:
+        path: |
+          path/to/dependencies
+          some/other/dependencies
+        key: ${{ steps.cache-primes-restore.outputs.cache-primary-key }}
