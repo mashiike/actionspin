@@ -20,6 +20,7 @@ func TestApp_Run(t *testing.T) {
 		ref   string
 	}{
 		{"actions", "checkout", "v2"},
+		{"actions", "checkout", "v4"},
 		{"actions", "setup-node", "v1"},
 		{"actions", "setup-go", "v5"},
 		{"actions", "cache", "v4"},

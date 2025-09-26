@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@mockedCommitHash # v4
+    - uses: actions/checkout@mockedCommitHash # v2
 
     - name: Restore cached Primes
       id: cache-primes-restore
