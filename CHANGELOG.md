@@ -1,5 +1,8 @@
 # Changelog
 
+## [v0.2.1](https://github.com/mashiike/actionspin/compare/v0.2.0...v0.2.1) - 2025-09-26
+- Add support for subpath action references by @mashiike in https://github.com/mashiike/actionspin/pull/33
+
 ## [v0.2.0](https://github.com/mashiike/actionspin/compare/v0.1.2...v0.2.0) - 2025-09-18
 - Bump Songmu/tagpr from 1.5.1 to 1.6.1 by @dependabot[bot] in https://github.com/mashiike/actionspin/pull/13
 - Add GitHub Enterprise Server support by @fujiwara in https://github.com/mashiike/actionspin/pull/27
