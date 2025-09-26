@@ -129,7 +129,7 @@ func (app *App) RunFile(ctx context.Context, path string) error {
 				continue
 			}
 			slog.DebugContext(ctx, "detect uses", "path", path, "uses", step.Uses)
-			owner, repo, ref, err := parseUses(step.Uses)
+			owner, repo, subPath, ref, err := parseUses(step.Uses)
 			if err != nil {
 				slog.WarnContext(ctx, "failed to parse uses, skip this step", "path", path, "uses", step.Uses, "error", err)
 				continue
@@ -143,7 +143,7 @@ func (app *App) RunFile(ctx context.Context, path string) error {
 				slog.WarnContext(ctx, "failed to resolve commit hash, skip this step", "path", path, "owner", owner, "repo", repo, "ref", ref, "error", err)
 				continue
 			}
-			bs, err = app.replaceUses(ctx, path, bs, owner, repo, ref, commitHash)
+			bs, err = app.replaceUses(ctx, path, bs, owner, repo, subPath, ref, commitHash)
 			if err != nil {
 				return Skipable(fmt.Errorf("failed to replace uses: %w", err))
 			}
@@ -170,8 +170,15 @@ func (app *App) getCommitHash(ctx context.Context, owner, repo, ref string) (str
 	return commitHash, nil
 }
 
-func (app *App) replaceUses(ctx context.Context, path string, bs []byte, owner, repo, ref string, commitHash string) ([]byte, error) {
-	uses := owner + "/" + repo + "@" + ref
+func (app *App) replaceUses(ctx context.Context, path string, bs []byte, owner, repo, subPath, ref string, commitHash string) ([]byte, error) {
+	var uses, replaceStr string
+	if subPath != "" {
+		uses = fmt.Sprintf("%s/%s/%s@%s", owner, repo, subPath, ref)
+		replaceStr = fmt.Sprintf("%s/%s/%s@%s", owner, repo, subPath, commitHash)
+	} else {
+		uses = fmt.Sprintf("%s/%s@%s", owner, repo, ref)
+		replaceStr = fmt.Sprintf("%s/%s@%s", owner, repo, commitHash)
+	}
 	if replacedUsesInFile, ok := app.replacedFiles[path]; ok {
 		if _, ok := replacedUsesInFile[uses]; ok {
 			return bs, nil
@@ -179,9 +186,9 @@ func (app *App) replaceUses(ctx context.Context, path string, bs []byte, owner, 
 	} else {
 		app.replacedFiles[path] = make(map[string]struct{})
 	}
-	replaceStr := fmt.Sprintf("%s/%s@%s", owner, repo, commitHash)
+
 	slog.DebugContext(ctx, "replace uses for debug", "path", path, "before", uses, "after", replaceStr)
-	slog.InfoContext(ctx, "replace uses", "path", path, "owner", owner, "repo", repo, "ref", ref, "commitHash", commitHash)
+	slog.InfoContext(ctx, "replace uses", "path", path, "owner", owner, "repo", repo, "subPath", subPath, "ref", ref, "commitHash", commitHash)
 	lines := bytes.Split(bs, []byte("\n"))
 	after := make([][]byte, 0, len(lines))
 	for _, line := range lines {
@@ -197,20 +204,20 @@ func (app *App) replaceUses(ctx context.Context, path string, bs []byte, owner, 
 	return bs, nil
 }
 
-func parseUses(uses string) (string, string, string, error) {
+func parseUses(uses string) (string, string, string, string, error) {
 	parts := strings.SplitN(uses, "@", 2)
 	if len(parts) != 2 {
-		return "", "", "", fmt.Errorf("unexpected uses format, expected `owner/repo@ref`, but got `%s`", uses)
+		return "", "", "", "", fmt.Errorf("unexpected uses format, expected `owner/repo@ref`, but got `%s`", uses)
 	}
 	ownerRepo := parts[0]
 	ref := parts[1]
-	parts = strings.SplitN(ownerRepo, "/", 2)
-	if len(parts) != 2 {
-		return "", "", "", fmt.Errorf("unexpected owner/repo format, expected `owner/repo`, but got `%s`", ownerRepo)
+	parts = strings.Split(ownerRepo, "/")
+	if len(parts) < 2 {
+		return "", "", "", "", fmt.Errorf("unexpected owner/repo format, expected `owner/repo` or `owner/repo/<path>`, but got `%s`", ownerRepo)
 	}
 	owner := parts[0]
 	repo := parts[1]
-	return owner, repo, ref, nil
+	return owner, repo, strings.Join(parts[2:], "/"), ref, nil
 }
 
 func (app *App) ReplacedUses() map[string]string {

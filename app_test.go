@@ -5,6 +5,7 @@ import (
 	"flag"
 	"os"
 	"path/filepath"
+	"slices"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -13,7 +14,23 @@ import (
 var updateFlag = flag.Bool("update", false, "update fixture files")
 
 func TestApp_Run(t *testing.T) {
+	expectedArgs := []struct {
+		owner string
+		repo  string
+		ref   string
+	}{
+		{"actions", "checkout", "v2"},
+		{"actions", "checkout", "v4"},
+		{"actions", "setup-node", "v1"},
+		{"actions", "setup-go", "v5"},
+		{"actions", "cache", "v4"},
+	}
 	mockCommitHashResolver := func(ctx context.Context, owner, repo, ref string) (string, error) {
+		if !slices.ContainsFunc(expectedArgs, func(e struct{ owner, repo, ref string }) bool {
+			return e.owner == owner && e.repo == repo && e.ref == ref
+		}) {
+			t.Errorf("unexpected call to CommitHashResolver with owner=%s, repo=%s, ref=%s", owner, repo, ref)
+		}
 		return "mockedCommitHash", nil
 	}
 
@@ -36,6 +53,7 @@ func TestApp_Run(t *testing.T) {
 		"workflows/workflow1.yaml",
 		"workflows/workflow2.yaml",
 		"workflows/workflow3.yaml",
+		"workflows/subdir.yaml",
 	}
 	replacedFiles := app.ReplacedFiles()
 	require.ElementsMatch(t, expectedFiles, replacedFiles)
