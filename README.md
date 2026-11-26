@@ -1,5 +1,37 @@
 # actionspin
 
+> [!IMPORTANT]
+> **actionspin is no longer maintained and this repository will be archived.**
+>
+> GitHub Actions now has built-in [workflow dependency lockfiles](https://docs.github.com/actions/concepts/security/workflow-dependency-lockfiles) (`.github/workflows/actions.lock`). They pin every action your workflows use, including transitive dependencies, to a commit SHA, while your workflow files keep readable tag references. GitHub Actions then runs exactly the locked commits. Please use GitHub's lockfiles instead of actionspin.
+>
+> Existing releases remain available, but no new features or fixes are planned.
+
+## Migrating to GitHub Actions workflow lockfiles
+
+1. Install the GitHub CLI extension:
+
+   ```sh
+   gh extension install github/gh-actions-lock
+   ```
+
+2. Generate the lockfile from the repository root (or pass a single workflow file):
+
+   ```sh
+   gh actions-lock
+   ```
+
+3. Review the whole diff (the extension may also rewrite `uses:` references to the exact version it resolved) and commit it.
+4. Re-run `gh actions-lock` whenever you add or change `uses:` dependencies. Dependabot version updates regenerate the matching lockfile entry automatically.
+
+According to GitHub's documentation, SHA pinning in workflow files is no longer necessary once a repository adopts a lockfile, so references pinned by actionspin can go back to readable tags if you prefer.
+
+See [Lock workflow dependencies](https://docs.github.com/en/actions/how-tos/secure-your-work/lock-workflow-dependencies) and the [general availability announcement](https://github.blog/changelog/2026-10-28-github-actions-workflow-lockfiles-are-generally-available/) for details.
+
+**GitHub Enterprise Server:** GitHub's announcement lists GitHub.com plans (Free, Team, GitHub Enterprise Cloud) only. If you rely on actionspin's GHES support, the last release keeps working as before.
+
+---
+
 Bulk replace GitHub Actions references from version tags to commit hashes for locked, reproducible workflows.
 
 ## Overview
