@@ -1,5 +1,8 @@
 # Changelog
 
+## [v0.2.2](https://github.com/mashiike/actionspin/compare/v0.2.1...v0.2.2) - 2026-11-26
+- docs: recommend GitHub Actions workflow lockfiles instead of actionspin by @mashiike in https://github.com/mashiike/actionspin/pull/50
+
 ## [v0.2.1](https://github.com/mashiike/actionspin/compare/v0.2.0...v0.2.1) - 2025-09-26
 - Add support for subpath action references by @mashiike in https://github.com/mashiike/actionspin/pull/33
 
